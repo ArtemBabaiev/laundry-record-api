@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.sql.Date;
+import java.time.LocalTime;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -26,13 +28,19 @@ public class LaundryQueueController {
         this.laundryService = laundryService;
     }
 
-
     @Operation(summary = "Get map of time and associated queue entry")
     @GetMapping
-    public Map<String, LaundryEntryResponse> fetchQueue(
+    public Map<LocalTime, LaundryEntryResponse> fetchQueue(
             @Parameter(description = "Date in `yyyy-MM-dd` format. must be today or the future")
             @RequestParam @TodayOrFuture Date date) {
         return this.laundryService.getLaundryQueue(date);
     }
 
+    @Operation(summary = "Get list of available hours for specified day")
+    @GetMapping("/available")
+    public List<String> fetchAvailableTime(
+            @Parameter(description = "Date in `yyyy-MM-dd` format. must be today or the future")
+            @RequestParam @TodayOrFuture Date date) {
+        return this.laundryService.getAvailableTime(date);
+    }
 }

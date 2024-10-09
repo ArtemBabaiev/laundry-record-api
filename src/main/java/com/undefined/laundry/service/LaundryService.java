@@ -27,13 +27,12 @@ public class LaundryService {
         this.propertiesStore = propertiesStore;
     }
 
-    public Map<String, LaundryEntryResponse> getLaundryQueue(Date date){
+    public Map<LocalTime, LaundryEntryResponse> getLaundryQueue(Date date){
         List<LaundryEntry> laundryEntries = this.laundryEntryRepository.findByDate(date);
-        TreeMap<String, LaundryEntryResponse> map = new TreeMap<>();
+        TreeMap<LocalTime, LaundryEntryResponse> map = new TreeMap<>();
         for (LaundryEntry laundryEntry : laundryEntries){
             LaundryEntryResponse entryResponse = modelMapper.map(laundryEntry, LaundryEntryResponse.class);
-
-            map.put(laundryEntry.getTime().format(DateTimeFormatters.HH_colon_mm), entryResponse);
+            map.put(laundryEntry.getTime(), entryResponse);
         }
         propertiesStore.getAvailableTime().forEach(time -> {
             if (!map.containsKey(time)){
@@ -44,4 +43,15 @@ public class LaundryService {
         return map;
     }
 
+    public List<String> getAvailableTime(Date date) {
+        List<String> availableTime = new ArrayList<>();
+        List<LocalTime> usedTime = this.laundryEntryRepository.findTimeByDate(date);
+        propertiesStore.getAvailableTime().forEach(time -> {
+            if (!usedTime.contains(time)){
+                availableTime.add(time.format(DateTimeFormatters.HH_colon_mm));
+            }
+        });
+
+        return availableTime;
+    }
 }
