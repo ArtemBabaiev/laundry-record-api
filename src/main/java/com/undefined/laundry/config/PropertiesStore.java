@@ -12,12 +12,12 @@ import java.util.List;
 @Getter
 @Component
 public class PropertiesStore {
-    private final List<String> availableTime = new ArrayList<>();
+    private final List<LocalTime> availableTime = new ArrayList<>();
 
     @Value("${available_hours}")
     private void setAvailableTime(List<Integer> hours) {
         for (Integer hour : hours){
-            this.availableTime.add(LocalTime.of(hour,0,0).format(DateTimeFormatters.HH_colon_mm));
+            this.availableTime.add(LocalTime.of(hour,0,0));
         }
     }
 }
