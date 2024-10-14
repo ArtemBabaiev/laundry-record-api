@@ -1,0 +1,21 @@
+services:
+  laundry-api:
+    build: .
+    ports:
+      - 8080:8080
+    environment:
+      - spring.datasource.url=jdbc:mysql://laundry-db:3306/laundry_db?createDatabaseIfNotExist=true
+    depends_on:
+      - laundry-db
+      
+  laundry-db:
+    image: mysql:latest
+    environment:
+      - MYSQL_ROOT_PASSWORD=my_secret_pw?
+    ports:
+      - 3306:3306
+    volumes:
+      - db-data:/var/lib/mysql
+
+volumes:
+  db-data:
