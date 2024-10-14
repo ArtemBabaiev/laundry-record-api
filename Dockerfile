@@ -6,7 +6,7 @@ COPY . .
 
 RUN mvn --batch-mode -DskipTests clean package
 
-FROM eclipse-temurin:21-alpine
+FROM eclipse-temurin:21-jre-alpine
 
 COPY --from=build /app/target/*.jar /opt/laudry-api.jar
 
