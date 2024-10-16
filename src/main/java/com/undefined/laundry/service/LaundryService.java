@@ -14,10 +14,13 @@ import org.springframework.stereotype.Service;
 import com.undefined.laundry.config.PropertiesStore;
 import com.undefined.laundry.model.LaundryEntry;
 import com.undefined.laundry.model.request.AccountEntryRequest;
+import com.undefined.laundry.model.request.AddEntryRequest;
 import com.undefined.laundry.model.response.AccountEntryResponse;
+import com.undefined.laundry.model.response.AddEntryResponse;
 import com.undefined.laundry.model.response.LaundryEntryResponse;
 import com.undefined.laundry.repository.LaundryEntryRepository;
 import com.undefined.laundry.utils.DateTimeFormatters;
+import com.undefined.laundry.utils.exception.BadRequestException;
 
 @Service
 public class LaundryService {
@@ -65,5 +68,19 @@ public class LaundryService {
 		List<LaundryEntry> entities = laundryEntryRepository.findByTelegramIdAndNotBeforeDate(request.getTelegramId(),
 				request.getDate());
 		return entities.stream().map(entity -> modelMapper.map(entity, AccountEntryResponse.class)).toList();
+	}
+	
+	public AddEntryResponse addEntry(AddEntryRequest request) {
+		LocalTime hourOnly = LocalTime.of(request.getTime().getHour(), 0, 0);
+		if (!propertiesStore.getAvailableTime().contains(hourOnly)) {
+			throw new BadRequestException("Provided time is not supported");
+		}
+		if (this.laundryEntryRepository.existsByTimeAndDate(hourOnly, request.getDate())) {
+			throw new BadRequestException("Such time and date already occupied");
+		}
+		request.setTime(hourOnly);
+		LaundryEntry entity = modelMapper.map(request, LaundryEntry.class);
+		entity = this.laundryEntryRepository.save(entity);
+		return modelMapper.map(entity, AddEntryResponse.class);
 	}
 }

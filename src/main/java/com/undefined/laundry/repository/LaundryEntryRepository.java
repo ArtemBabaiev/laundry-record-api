@@ -22,4 +22,6 @@ public interface LaundryEntryRepository extends JpaRepository<LaundryEntry, UUID
 	@Query("SELECT le FROM LaundryEntry AS le WHERE le.telegramId = :sTelegramId AND le.date >= :sDate ORDER BY le.date ASC, le.time ASC")
 	List<LaundryEntry> findByTelegramIdAndNotBeforeDate(@Param("sTelegramId") Long telegramId,
 			@Param("sDate") LocalDate date);
+
+	boolean existsByTimeAndDate(LocalTime time, LocalDate date);
 }
