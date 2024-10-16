@@ -1,13 +1,16 @@
 package com.undefined.laundry.utils.annotation;
 
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.time.LocalDate;
+
 import jakarta.validation.Constraint;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import jakarta.validation.Payload;
-
-import java.lang.annotation.*;
-import java.sql.Date;
-import java.time.LocalDate;
 
 @Documented
 @Target(ElementType.PARAMETER)
@@ -15,19 +18,18 @@ import java.time.LocalDate;
 @Constraint(validatedBy = TodayOrFuture.Validator.class)
 public @interface TodayOrFuture {
 
-    public String message() default "must be a today or future date";
+	public String message() default "must be a today or future date";
 
-    public Class<?>[] groups() default {};
+	public Class<?>[] groups() default {};
 
-    public Class<? extends Payload>[] payload() default {};
+	public Class<? extends Payload>[] payload() default {};
 
-    class Validator implements ConstraintValidator<TodayOrFuture, Date> {
+	class Validator implements ConstraintValidator<TodayOrFuture, LocalDate> {
 
-        @Override
-        public boolean isValid(Date value, ConstraintValidatorContext context) {
-            var now = LocalDate.now();
-            var valueDate = value.toLocalDate();
-            return !valueDate.isBefore(now);
-        }
-    }
+		@Override
+		public boolean isValid(LocalDate value, ConstraintValidatorContext context) {
+			var now = LocalDate.now();
+			return !value.isBefore(now);
+		}
+	}
 }
