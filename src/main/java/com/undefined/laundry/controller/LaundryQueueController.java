@@ -8,18 +8,23 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.undefined.laundry.model.request.AccountEntryRequest;
+import com.undefined.laundry.model.request.AddEntryRequest;
 import com.undefined.laundry.model.response.AccountEntryResponse;
+import com.undefined.laundry.model.response.AddEntryResponse;
 import com.undefined.laundry.model.response.LaundryEntryResponse;
 import com.undefined.laundry.service.LaundryService;
 import com.undefined.laundry.utils.annotation.TodayOrFuture;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/laundry-queue")
@@ -56,5 +61,11 @@ public class LaundryQueueController {
 				.build();
 
 		return this.laundryService.getAccountEntries(request);
+	}
+	
+	@Operation(summary = "Add new entry to laundry queue")
+	@PostMapping
+	public AddEntryResponse postLaundryEntry(@RequestBody @Valid AddEntryRequest request) {
+		return this.laundryService.addEntry(request);
 	}
 }
