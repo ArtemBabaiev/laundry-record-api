@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.undefined.laundry.model.request.AccountEntryRequest;
 import com.undefined.laundry.model.request.AddEntryRequest;
+import com.undefined.laundry.model.request.DeleteEntryRequest;
 import com.undefined.laundry.model.request.UpdateEntryRequest;
 import com.undefined.laundry.model.response.AccountEntryResponse;
 import com.undefined.laundry.model.response.ErrorResponse;
@@ -79,5 +82,15 @@ public class LaundryQueueController {
 	@PutMapping
 	public WriteEntryResponse putLaundryEntry(@RequestBody @Valid UpdateEntryRequest request) {
 		return this.laundryService.updateEntry(request);
+	}
+
+	@Operation(summary = "Modify existing entry of laundry queue", responses = { @ApiResponse(responseCode = "204"),
+			@ApiResponse(responseCode = "404", description = "entry with provided uuid wasnt found", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+			@ApiResponse(responseCode = "401", description = "mismatch of entry ownership", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+			@ApiResponse(responseCode = "400", description = "malformed request", content = @Content(schema = @Schema(implementation = ErrorResponse.class))) })
+	@DeleteMapping
+	public ResponseEntity<Object> deleteLaundryEntry(@RequestBody @Valid DeleteEntryRequest request) {
+		this.laundryService.deleteEntry(request);
+		return ResponseEntity.noContent().build();
 	}
 }

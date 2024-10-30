@@ -15,6 +15,7 @@ import com.undefined.laundry.config.PropertiesStore;
 import com.undefined.laundry.model.LaundryEntry;
 import com.undefined.laundry.model.request.AccountEntryRequest;
 import com.undefined.laundry.model.request.AddEntryRequest;
+import com.undefined.laundry.model.request.DeleteEntryRequest;
 import com.undefined.laundry.model.request.UpdateEntryRequest;
 import com.undefined.laundry.model.response.AccountEntryResponse;
 import com.undefined.laundry.model.response.LaundryEntryResponse;
@@ -104,5 +105,14 @@ public class LaundryService {
 
 		modelMapper.map(request, entity);
 		return modelMapper.map(this.laundryEntryRepository.save(entity), WriteEntryResponse.class);
+	}
+
+	public void deleteEntry(DeleteEntryRequest request) {
+		LaundryEntry entity = this.laundryEntryRepository.findById(request.getUuid())
+				.orElseThrow(() -> new NotFoundException("Entry with provided uuid not found"));
+		if (!request.getTelegramId().equals(entity.getTelegramId())) {
+			throw new UnauthorizedException("Unauthorized access to landry entry");
+		}
+		this.laundryEntryRepository.deleteById(request.getUuid());
 	}
 }

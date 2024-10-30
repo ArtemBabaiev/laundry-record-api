@@ -31,8 +31,6 @@ public @interface FutureDateTime {
 
 		@Override
 		public boolean isValid(HasDateTime value, ConstraintValidatorContext context) {
-			System.out.println(value.getClass());
-			System.out.println("Validate");
 			LocalDate nowDate = LocalDate.now();
 			if (value.getDate().isBefore(nowDate)) {
 				return false;
