@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -16,19 +16,23 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.undefined.laundry.model.request.AccountEntryRequest;
 import com.undefined.laundry.model.request.AddEntryRequest;
+import com.undefined.laundry.model.request.UpdateEntryRequest;
 import com.undefined.laundry.model.response.AccountEntryResponse;
-import com.undefined.laundry.model.response.AddEntryResponse;
+import com.undefined.laundry.model.response.ErrorResponse;
 import com.undefined.laundry.model.response.LaundryEntryResponse;
+import com.undefined.laundry.model.response.WriteEntryResponse;
 import com.undefined.laundry.service.LaundryService;
 import com.undefined.laundry.utils.annotation.TodayOrFuture;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/laundry-queue")
-@Validated
 public class LaundryQueueController {
 	private final LaundryService laundryService;
 
@@ -55,17 +59,25 @@ public class LaundryQueueController {
 	@GetMapping("/account")
 	public List<AccountEntryResponse> fetchEntriesForAccount(
 			@Parameter(description = "Id of telegram account") @RequestParam Long telegramId) {
-		AccountEntryRequest request = AccountEntryRequest.builder()
-				.telegramId(telegramId)
-				.date(LocalDate.now())
+		AccountEntryRequest request = AccountEntryRequest.builder().telegramId(telegramId).date(LocalDate.now())
 				.build();
 
 		return this.laundryService.getAccountEntries(request);
 	}
-	
-	@Operation(summary = "Add new entry to laundry queue")
+
+	@Operation(summary = "Add new entry to laundry queue", responses = { @ApiResponse(responseCode = "200"),
+			@ApiResponse(responseCode = "400", description = "malformed request or bad datetime", content = @Content(schema = @Schema(implementation = ErrorResponse.class))) })
 	@PostMapping
-	public AddEntryResponse postLaundryEntry(@RequestBody @Valid AddEntryRequest request) {
+	public WriteEntryResponse postLaundryEntry(@RequestBody @Valid AddEntryRequest request) {
 		return this.laundryService.addEntry(request);
+	}
+
+	@Operation(summary = "Modify existing entry of laundry queue", responses = { @ApiResponse(responseCode = "200"),
+			@ApiResponse(responseCode = "404", description = "entry with provided uuid wasnt found", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+			@ApiResponse(responseCode = "401", description = "mismatch of entry ownership", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+			@ApiResponse(responseCode = "400", description = "malformed request or bad datetime", content = @Content(schema = @Schema(implementation = ErrorResponse.class))) })
+	@PutMapping
+	public WriteEntryResponse putLaundryEntry(@RequestBody @Valid UpdateEntryRequest request) {
+		return this.laundryService.updateEntry(request);
 	}
 }
