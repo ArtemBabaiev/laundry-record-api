@@ -19,7 +19,7 @@ import com.undefined.laundry.utils.exception.NotFoundException;
 import jakarta.validation.ConstraintViolationException;
 
 @ControllerAdvice
-public class ConstraintViolationExceptionHandler extends ResponseEntityExceptionHandler {
+public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
 
 	@ExceptionHandler(value = { ConstraintViolationException.class })
 	protected ResponseEntity<Object> handleConstraintViolation(ConstraintViolationException e, WebRequest request) {
