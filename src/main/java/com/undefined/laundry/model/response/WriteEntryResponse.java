@@ -10,7 +10,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class AddEntryResponse {
+public class WriteEntryResponse {
 	private UUID uuid;
 	private long telegramId;
 	private String username;
