@@ -13,10 +13,16 @@ import lombok.Setter;
 public class UpdateEntryRequest implements HasDateTime {
 	@NotNull
 	private UUID uuid;
+	
 	@NotNull
 	private Long telegramId;
+	
 	@NotNull
 	private LocalTime time;
+	
 	@NotNull
 	private LocalDate date;
+
+	@NotNull
+	private Integer floor;
 }

@@ -14,14 +14,16 @@ import com.undefined.laundry.model.LaundryEntry;
 
 @Repository
 public interface LaundryEntryRepository extends JpaRepository<LaundryEntry, UUID> {
-	List<LaundryEntry> findByDate(LocalDate date);
+	List<LaundryEntry> findByDateAndFloor(LocalDate date, Integer floor);
 
-	@Query("SELECT le.time FROM LaundryEntry AS le WHERE le.date = :sDate")
-	List<LocalTime> findTimeByDate(@Param("sDate") LocalDate date);
+	@Query("SELECT le.time FROM LaundryEntry AS le WHERE le.date = :sDate AND le.floor = :sFloor")
+	List<LocalTime> findTimeByDateAndFloor(@Param("sDate") LocalDate date, @Param("sFloor") Integer floor);
 
-	@Query("SELECT le FROM LaundryEntry AS le WHERE le.telegramId = :sTelegramId AND le.date >= :sDate ORDER BY le.date ASC, le.time ASC")
-	List<LaundryEntry> findByTelegramIdAndNotBeforeDate(@Param("sTelegramId") Long telegramId,
-			@Param("sDate") LocalDate date);
+	@Query("SELECT le FROM LaundryEntry AS le WHERE le.telegramId = :sTelegramId AND le.floor = :sFloor AND le.date >= :sDate ORDER BY le.date ASC, le.time ASC")
+	List<LaundryEntry> findByTelegramIdAndFloorAndNotBeforeDate(@Param("sTelegramId") Long telegramId,
+			@Param("sFloor") Integer floor, @Param("sDate") LocalDate date);
 
-	boolean existsByTimeAndDate(LocalTime time, LocalDate date);
+	boolean existsByTimeAndDateAndFloor(LocalTime time, LocalDate date, Integer floor);
+
+	List<LaundryEntry> findByFloorNotNullAndDateBetween(LocalDate begin, LocalDate end);
 }

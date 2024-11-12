@@ -3,9 +3,11 @@ package com.undefined.laundry.service;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,8 +42,8 @@ public class LaundryService {
 		this.propertiesStore = propertiesStore;
 	}
 
-	public Map<LocalTime, LaundryEntryResponse> getLaundryQueue(LocalDate date) {
-		List<LaundryEntry> laundryEntries = this.laundryEntryRepository.findByDate(date);
+	public Map<LocalTime, LaundryEntryResponse> getLaundryQueue(Integer floor, LocalDate date) {
+		List<LaundryEntry> laundryEntries = this.laundryEntryRepository.findByDateAndFloor(date, floor);
 		TreeMap<LocalTime, LaundryEntryResponse> map = new TreeMap<>();
 		for (LaundryEntry laundryEntry : laundryEntries) {
 			LaundryEntryResponse entryResponse = modelMapper.map(laundryEntry, LaundryEntryResponse.class);
@@ -56,9 +58,9 @@ public class LaundryService {
 		return map;
 	}
 
-	public List<String> getAvailableTime(LocalDate date) {
+	public List<String> getAvailableTime(Integer floor, LocalDate date) {
 		List<String> availableTime = new ArrayList<>();
-		List<LocalTime> usedTime = this.laundryEntryRepository.findTimeByDate(date);
+		List<LocalTime> usedTime = this.laundryEntryRepository.findTimeByDateAndFloor(date, floor);
 		propertiesStore.getAvailableTime().forEach(time -> {
 			if (!usedTime.contains(time)) {
 				availableTime.add(time.format(DateTimeFormatters.HH_colon_mm));
@@ -69,8 +71,8 @@ public class LaundryService {
 	}
 
 	public List<AccountEntryResponse> getAccountEntries(AccountEntryRequest request) {
-		List<LaundryEntry> entities = laundryEntryRepository.findByTelegramIdAndNotBeforeDate(request.getTelegramId(),
-				request.getDate());
+		List<LaundryEntry> entities = laundryEntryRepository.findByTelegramIdAndFloorAndNotBeforeDate(
+				request.getTelegramId(), request.getFloor(), request.getDate());
 		return entities.stream().map(entity -> modelMapper.map(entity, AccountEntryResponse.class)).toList();
 	}
 
@@ -79,7 +81,7 @@ public class LaundryService {
 		if (!propertiesStore.getAvailableTime().contains(hourOnly)) {
 			throw new BadRequestException("Provided time is not supported");
 		}
-		if (this.laundryEntryRepository.existsByTimeAndDate(hourOnly, request.getDate())) {
+		if (this.laundryEntryRepository.existsByTimeAndDateAndFloor(hourOnly, request.getDate(), request.getFloor())) {
 			throw new BadRequestException("Such time and date already occupied");
 		}
 		request.setTime(hourOnly);
@@ -99,7 +101,8 @@ public class LaundryService {
 		if (!propertiesStore.getAvailableTime().contains(entity.getTime())) {
 			throw new BadRequestException("Provided time is not supported");
 		}
-		if (this.laundryEntryRepository.existsByTimeAndDate(entity.getTime(), request.getDate())) {
+		if (this.laundryEntryRepository.existsByTimeAndDateAndFloor(entity.getTime(), request.getDate(),
+				request.getFloor())) {
 			throw new BadRequestException("Such time and date already occupied");
 		}
 
@@ -114,5 +117,14 @@ public class LaundryService {
 			throw new UnauthorizedException("Unauthorized access to landry entry");
 		}
 		this.laundryEntryRepository.deleteById(request.getUuid());
+	}
+
+	public Map<Integer, List<LaundryEntry>> getQueueForTable(int month, int year) {
+		LocalDate start = LocalDate.of(year, month, 1);
+		LocalDate finish = month == 12 ? LocalDate.of(year + 1, 1, 1) : LocalDate.of(year, month + 1, 1);
+		List<LaundryEntry> entries = this.laundryEntryRepository.findByFloorNotNullAndDateBetween(start, finish);
+
+		return entries.stream().sorted(Comparator.comparing(LaundryEntry::getDate).thenComparing(LaundryEntry::getTime))
+				.collect(Collectors.groupingBy(LaundryEntry::getFloor));
 	}
 }

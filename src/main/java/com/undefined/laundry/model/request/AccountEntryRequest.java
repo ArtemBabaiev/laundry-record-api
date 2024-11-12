@@ -12,4 +12,5 @@ import lombok.Setter;
 public class AccountEntryRequest {
 	private Long telegramId;
 	private LocalDate date;
+	private Integer floor;
 }
