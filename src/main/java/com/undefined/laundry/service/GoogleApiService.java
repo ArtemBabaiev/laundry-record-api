@@ -45,6 +45,7 @@ public class GoogleApiService {
 	@Autowired
 	private Sheets service;
 
+	@Scheduled(cron = "0 */10 * * * *")
 	public void syncSpreadSheet() {
 		LocalDate now = LocalDate.now();
 		List<FloorGroup> floorGroups = this.laundryService.getQueueForTable(now.getMonthValue(), now.getYear());
@@ -61,7 +62,6 @@ public class GoogleApiService {
 
 	}
 
-	@Scheduled(cron = "*/10 * * * *")
 	private void prepareSheets(List<FloorGroup> floorGroups) throws IOException {
 		List<String> requiredSheets = floorGroups.stream().map(FloorGroup::getSheetTitle).collect(Collectors.toList());
 		Spreadsheet spreadsheet = service.spreadsheets().get(spreadsheetId).execute();
