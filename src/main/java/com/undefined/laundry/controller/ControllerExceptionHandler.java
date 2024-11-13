@@ -15,6 +15,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import com.undefined.laundry.model.response.ErrorResponse;
 import com.undefined.laundry.utils.exception.BadRequestException;
 import com.undefined.laundry.utils.exception.NotFoundException;
+import com.undefined.laundry.utils.exception.UnauthorizedException;
 
 import jakarta.validation.ConstraintViolationException;
 
@@ -62,5 +63,15 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
         errorResponse.setTimestamp(System.currentTimeMillis());
 
         return handleExceptionInternal(e, errorResponse, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
+	}
+	
+	@ExceptionHandler(value = { UnauthorizedException.class })
+	protected ResponseEntity<Object> handleNotFoundException(UnauthorizedException e, WebRequest request) {
+		ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setMessage(e.getMessage());
+        errorResponse.setStatus(HttpStatus.UNAUTHORIZED.value());
+        errorResponse.setTimestamp(System.currentTimeMillis());
+
+        return handleExceptionInternal(e, errorResponse, new HttpHeaders(), HttpStatus.UNAUTHORIZED, request);
 	}
 }
