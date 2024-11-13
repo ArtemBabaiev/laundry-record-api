@@ -33,6 +33,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
 @RestController
 @RequestMapping("/laundry-queue")
@@ -47,22 +48,28 @@ public class LaundryQueueController {
 	@Operation(summary = "Get map of time and associated queue entry")
 	@GetMapping
 	public Map<LocalTime, LaundryEntryResponse> fetchQueue(
+			@Parameter(description = "Floor number") @RequestParam @NotNull Integer floor,
 			@Parameter(description = "Date in `yyyy-MM-dd` format. must be today or the future") @RequestParam @TodayOrFuture LocalDate date) {
-		return this.laundryService.getLaundryQueue(date);
+		return this.laundryService.getLaundryQueue(floor, date);
 	}
 
 	@Operation(summary = "Get list of available hours for specified day")
 	@GetMapping("/available")
 	public List<String> fetchAvailableTime(
+			@Parameter(description = "Floor number") @RequestParam @NotNull Integer floor,
 			@Parameter(description = "Date in `yyyy-MM-dd` format. must be today or the future") @RequestParam @TodayOrFuture LocalDate date) {
-		return this.laundryService.getAvailableTime(date);
+		return this.laundryService.getAvailableTime(floor, date);
 	}
 
 	@Operation(summary = "Get every laudnry entry from today and forward for specified account")
 	@GetMapping("/account")
 	public List<AccountEntryResponse> fetchEntriesForAccount(
+			@Parameter(description = "Floor number") @RequestParam @NotNull Integer floor,
 			@Parameter(description = "Id of telegram account") @RequestParam Long telegramId) {
-		AccountEntryRequest request = AccountEntryRequest.builder().telegramId(telegramId).date(LocalDate.now())
+		AccountEntryRequest request = AccountEntryRequest.builder()
+				.telegramId(telegramId)
+				.date(LocalDate.now())
+				.floor(floor)
 				.build();
 
 		return this.laundryService.getAccountEntries(request);

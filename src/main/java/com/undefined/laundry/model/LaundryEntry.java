@@ -33,6 +33,5 @@ public class LaundryEntry {
 	private LocalTime time;
 	private LocalDate date;
 	private String room;
-	@TenantId
 	private Integer floor;
 }

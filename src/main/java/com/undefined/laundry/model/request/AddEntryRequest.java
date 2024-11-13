@@ -30,4 +30,7 @@ public class AddEntryRequest implements HasDateTime {
 
 	@NotBlank
 	private String room;
+	
+	@NotNull
+	private Integer floor;
 }
